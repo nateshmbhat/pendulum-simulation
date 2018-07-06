@@ -6,7 +6,7 @@ let mouseDown = 0;
 let pendulumHandler;
 
 function setup() {
-    createCanvas(document.body.clientWidth, document.body.clientHeight + 100);
+    createCanvas(document.body.clientWidth, document.body.clientHeight + 400);
     frameRate(100);
     strokeWeight(2);
     pendulumHandler = new PendulumHandler();
@@ -14,7 +14,7 @@ function setup() {
 
 function draw() {
     background(255);
-    fill(255);
+    fill(random(255) , random(255) , random(255));
     pendulumHandler.updateAll();
 }
 
@@ -90,13 +90,7 @@ class PendulumHandler {
     }
 
 
-    handleCanvasSize(){
-        if((originy+length + radius > this.clientHeight ) || (originx+length + radius > this.clientWidth))
-        {
-           if(originy+ length+ radius > this.clientHeight){ this.clientHeight = originy+ length+ radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
-           if(originx+ length+ radius > this.clientWidth)  {this.clientWidth = originx + length + radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
-        }
-    }
+    
 
     addPendulum({originx = 500, originy = 350, length = 150, radius = 35 , mass = 3 } ) {
 
@@ -106,10 +100,10 @@ class PendulumHandler {
            if(originx+ length+ radius > this.clientWidth)  {this.clientWidth = originx + length + radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
         }
 
-        console.log(Number(originx) || this.originx, Number(originy) || this.originy, Number(length)||this.length, Number(radius)||this.length, Number(mass)||this.mass) ; 
+        console.log(Number(originx) || this.originx, Number(originy) || this.originy, Number(length)||this.length, Number(radius)||this.radius, Number(mass)||this.mass) ; 
 
 
-        this.pendulumArray.push(new Pendulum(Number(originx) || this.originx, Number(originy) || this.originy, Number(length)||this.length, Number(radius)||this.length, Number(mass)||this.mass)) ; 
+        this.pendulumArray.push(new Pendulum(Number(originx) || this.originx, Number(originy) || this.originy, Number(length)||this.length, Number(radius)||this.radius , Number(mass)||this.mass)) ; 
     }
 
     pauseAll() {
@@ -153,11 +147,12 @@ class PendulumHandler {
 class Pendulum {
 
     constructor(originx, originy, length, radius , mass) {
+
         this.length = 150, this.angle = PI / 2;
         this.angVel = 0, this.angAcc = 0;
         this.mass = mass;
-
-        this.g = 9.8;
+        this.numberOfRotations = 0 ; 
+        this.g = 1;
 
         this.stopUpdatingflag = false;
         this.mouseLockedFlag = false;
@@ -168,8 +163,10 @@ class Pendulum {
         this.length = length;
     }
 
+
     update() {
 
+        line(this.origin.x-5 ,this.origin.y, this.origin.x+5  , this.origin.y) ;
         line(this.origin.x, this.origin.y, this.bob.x, this.bob.y);
         ellipse(this.bob.x, this.bob.y, this.radius, this.radius);
 
@@ -179,10 +176,11 @@ class Pendulum {
         this.bob.x = this.origin.x + this.length * sin(this.angle);
         this.bob.y = this.origin.y + this.length * cos(this.angle);
 
-        this.angAcc = this.mass * -this.g/this.length * sin(this.angle);
+        this.angAcc =  - this.mass * this.g/this.length * sin(this.angle);
         this.angle += this.angVel;
         this.angVel += this.angAcc;
-        this.angVel *= 0.997;
+
+        this.angVel *=0.997 ; 
     }
 
 
@@ -198,7 +196,8 @@ class Pendulum {
 
     handleMouseDrag(x, y) {
         if (!this.mouseLockedFlag) return;
-        if ((abs(x - this.bob.x) <= this.radius && abs(y - this.bob.y) <= this.radius) || this.mouseLockedFlag) {
+
+        if (this.mouseLockedFlag) {
             this.stopUpdatingflag = true;
             this.angVel = 0;
             this.angAcc = 0;
