@@ -2,6 +2,7 @@
 
 let totalwidth = 1000,
     totalheight = 700;
+let mouseDown = 0;
 let pendulumHandler;
 
 function setup() {
@@ -37,10 +38,13 @@ class PendulumHandler {
         //Default values ; 
         this.originx = document.body.clientWidth/2  ;
         this.originy = 350  ;
-        this.mass = 3 ; this.length = 150 ; this.radius = 35 ; 
+        this.canvasWidth = document.body.clientWidth ; 
+        this.canvasHeight = document.body.clientHeight ; 
+        this.mass = 0.3 ; this.length = 150 ; this.radius = 35 ; 
         this.pauseAllFlag = false;
         this.pendulumArray = new Array();
         this.pendulumArray.push(new Pendulum(this.originx, this.originy, this.length, this.radius, this.mass ));
+
 
         $('#addbtn').on('click', e=>{
            this.addPendulum(this.getInputParams()) ;  
@@ -53,6 +57,16 @@ class PendulumHandler {
         $('#resetbtn').on('click' , e=>{
             this.resetAll() ; 
         })
+
+        $("input[name='gravity']").on('mousemove' , e=>{
+            console.log("mousemove") ; 
+            if(mouseDown)
+                this.setGravity($("input[name='gravity']")[0].value) ; 
+        })
+    }
+
+    setGravity(gravity){
+        this.pendulumArray.forEach(pend=>{pend.setGravity(gravity);})        
     }
 
     getInputParams(){
@@ -75,7 +89,22 @@ class PendulumHandler {
         this.pendulumArray.pop() ;
     }
 
+
+    handleCanvasSize(){
+        if((originy+length + radius > this.clientHeight ) || (originx+length + radius > this.clientWidth))
+        {
+           if(originy+ length+ radius > this.clientHeight){ this.clientHeight = originy+ length+ radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
+           if(originx+ length+ radius > this.clientWidth)  {this.clientWidth = originx + length + radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
+        }
+    }
+
     addPendulum({originx = 500, originy = 350, length = 150, radius = 35 , mass = 3 } ) {
+
+        if((originy+length + radius > this.clientHeight ) || (originx+length + radius > this.clientWidth))
+        {
+           if(originy+ length+ radius > this.clientHeight){ this.clientHeight = originy+ length+ radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
+           if(originx+ length+ radius > this.clientWidth)  {this.clientWidth = originx + length + radius ; resizeCanvas(this.clientWidth , this.clientHeight) ; }
+        }
 
         console.log(Number(originx) || this.originx, Number(originy) || this.originy, Number(length)||this.length, Number(radius)||this.length, Number(mass)||this.mass) ; 
 
@@ -104,11 +133,11 @@ class PendulumHandler {
     }
 
     handleMousePress(x, y) {
-        for(let i =0 ; i < this.pendulumArray.length ; i++)
+        for(let i = this.pendulumArray.length -1 ; i>=0  ; i--)
         {
             if(this.pendulumArray[i].handleMousePress(x, y))
-                continue ; 
-                // break ; 
+                // continue ; 
+                break ; 
         }
     }
 
@@ -128,7 +157,7 @@ class Pendulum {
         this.angVel = 0, this.angAcc = 0;
         this.mass = mass;
 
-        this.g = 0.0006;
+        this.g = 9.8;
 
         this.stopUpdatingflag = false;
         this.mouseLockedFlag = false;
@@ -150,7 +179,7 @@ class Pendulum {
         this.bob.x = this.origin.x + this.length * sin(this.angle);
         this.bob.y = this.origin.y + this.length * cos(this.angle);
 
-        this.angAcc = this.mass * -this.g * sin(this.angle);
+        this.angAcc = this.mass * -this.g/this.length * sin(this.angle);
         this.angle += this.angVel;
         this.angVel += this.angAcc;
         this.angVel *= 0.997;
@@ -180,7 +209,11 @@ class Pendulum {
 
 
     handleMousePress(x, y) {
-        if ((abs(x - this.bob.x) <= this.radius && abs(y - this.bob.y) <= this.radius)) {
+        console.log("x = " , x) ; 
+        console.log("bob.x = " , this.bob.x) ; 
+        console.log("radius = " , this.radius) ; 
+        console.log(abs(x - this.bob.x))
+        if ((abs(x - this.bob.x) <= this.radius/2 && abs(y - this.bob.y) <= this.radius/2)) {
             this.mouseLockedFlag = true;
             this.handleMouseDrag(x, y);
             return true ; 
@@ -246,4 +279,13 @@ class Pendulum {
         this.origin.x = x;
         this.origin.y = y;
     }
+}
+
+
+
+document.body.onmousedown = function() { 
+    mouseDown = 1;
+}
+document.body.onmouseup = function() {
+    mouseDown = 0;
 }
