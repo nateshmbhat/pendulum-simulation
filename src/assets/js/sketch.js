@@ -82,6 +82,13 @@ class PendulumHandler {
     resetAll(){
         while(this.pendulumArray.length>0) delete this.pendulumArray.pop() ; 
 
+
+        $("input[name='length']")[0].value = "" ; 
+        $("input[name='mass']")[0].value ="" ; 
+        $("input[name='radius']")[0].value = "" ; 
+        $("input[name='originx']")[0].value = "" ; 
+        $("input[name='originy']")[0].value = "" ;
+
         this.pendulumArray.push(new Pendulum(this.originx , this.originy , this.length , this.radius  , this.mass)) ; 
     }
 
